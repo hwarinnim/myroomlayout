@@ -939,7 +939,7 @@
 
             // 🧠 Replace the resetRoom() onload with loadState using saved layout
             const html = document.documentElement.outerHTML.replace(
-                /window\.onload = \(\) => {\s*resetRoom\(\);\s*}/,
+                /window\.onload = \(\) => {\s*resetRoom\(\);\s*fitToCanvas\(\);\s*}/,
                 `window.onload = () => {
     loadState(${JSON.stringify(state)});
   }`
