@@ -1174,6 +1174,11 @@
         }
 
         function exportToHtml() {
+            Object.values(furnitureMap).forEach(el => {
+                el.style.left = el.offsetLeft + 'px';
+                el.style.top = el.offsetTop + 'px';
+            });
+
             const state = {
                 roomWidth: roomWidthCm,
                 roomHeight: roomHeightCm,
@@ -1190,19 +1195,19 @@
                 }))
             };
 
-            // Replace the onload code block directly with fixed layout loading
-            const fullHtml = document.documentElement.outerHTML.replace(
-                /window\.onload\s*=\s*\(\)\s*=>\s*{[\s\S]*?};/,
+
+
+            const html = document.documentElement.outerHTML.replace(
+                /window\.onload = \(\) => {\s*resetRoom\(\);\s*fitToCanvas\(\);\s*}/,
                 `window.onload = () => {
-            loadState(${JSON.stringify(state)});
-            fitToCanvas();
-            setTimeout(() => {
-const switchBtn = document.querySelector('.mode-switch-btn');
-          if (switchBtn) switchBtn.style.maxWidth = 'unset';
-      }, 50);        }`
+    loadState(${JSON.stringify(state)});
+  }`
+
             );
 
-            const blob = new Blob([fullHtml], { type: 'text/html' });
+
+            // Save to file
+            const blob = new Blob([html], { type: 'text/html' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
