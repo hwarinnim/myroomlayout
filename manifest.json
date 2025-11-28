@@ -1,6 +1,6 @@
 {
-    "name": "My Room Layout",
-    "short_name": "RoomLayout",
+    "name": "Room Planner",
+    "short_name": "RoomPlanner",
     "start_url": "index.html",
     "display": "standalone",
     "background_color": "#036d80",
