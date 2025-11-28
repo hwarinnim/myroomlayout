@@ -779,6 +779,8 @@
             fitToCanvas();
 
             isRestoring = false;
+
+            saveHistory();
         }
 
         function undo() {
@@ -819,13 +821,22 @@
                 }))
             };
 
-            // 🧠 Replace the resetRoom() onload with loadState using saved layout
-            const html = document.documentElement.outerHTML.replace(
-                /window\.onload = \(\) => {\s*resetRoom\(\);\s*}/,
-                `window.onload = () => {
-    loadState(${JSON.stringify(state)});
-  }`
-            );
+            // Clone current document
+            const clone = document.documentElement.cloneNode(true);
+            const script = clone.querySelector('script');
+
+            // Create a new script tag with the saved layout
+            const saved = document.createElement('script');
+            saved.textContent = `const savedLayout = ${JSON.stringify(state)};\nwindow.onload = () => { loadState(savedLayout); };`;
+
+            // Inject right after the original script
+            script.parentNode.insertBefore(saved, script.nextSibling);
+
+            // Build final HTML
+            const finalHtml = '<!DOCTYPE html>\n' + clone.outerHTML;
+            
+
+
 
             // 📦 Download the file
             const blob = new Blob([html], { type: 'text/html' });
@@ -842,7 +853,11 @@
 
 
         window.onload = () => {
-            resetRoom();
+            if (typeof savedLayout !== 'undefined') {
+                loadState(savedLayout);
+            } else {
+                resetRoom();
+            }
         }
 
         document.addEventListener('click', (e) => {
