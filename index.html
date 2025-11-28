@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+    <link rel="manifest" href="manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Oxygen+Mono&display=swap" rel="stylesheet">
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -965,6 +966,13 @@
             window.location.href = 'mrlo-tidy-mode.html';
         }
 
+        if ('serviceWorker' in navigator) {
+           window.addEventListener('load', () => {
+              navigator.serviceWorker.register('sw.js')
+                 .then(reg => console.log('Service Worker registered:', reg))
+                 .catch(err => console.error('Service Worker registration failed:', err));
+           });
+        }
 
     </script>
 </body>
