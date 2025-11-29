@@ -1028,6 +1028,8 @@
                 let offsetY = touch.clientY - el.getBoundingClientRect().top;
                 Object.values(furnitureMap).forEach(f => f.classList.remove('selected'));
                 el.classList.add('selected');
+                highlightSidebarItem(el.dataset.id);
+
 
                 function moveAt(t) {
                     const touchMove = t.touches[0];
