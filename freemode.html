@@ -718,24 +718,44 @@
                     const cx = newLeft + w / 2;
                     const cy = newTop + h / 2;
 
-                    const corners = [
-                        [-w / 2, -h / 2],
-                        [w / 2, -h / 2],
-                        [w / 2, h / 2],
-                        [-w / 2, h / 2]
-                    ].map(([x, y]) => {
-                        const rx = x * Math.cos(angle) - y * Math.sin(angle);
-                        const ry = x * Math.sin(angle) + y * Math.cos(angle);
-                        return [cx + rx, cy + ry];
-                    });
+                    let minX, maxX, minY, maxY;
 
-                    const xs = corners.map(c => c[0]);
-                    const ys = corners.map(c => c[1]);
+                    // Special oval math only if it's a circle type AND width ≠ height AND rotation ≠ 0
+                    const isOval = el.dataset.type === 'circle' && w !== h && angle !== 0;
 
-                    const minX = Math.min(...xs);
-                    const maxX = Math.max(...xs);
-                    const minY = Math.min(...ys);
-                    const maxY = Math.max(...ys);
+                    if (isOval) {
+                        const rx = w / 2;
+                        const ry = h / 2;
+                        const cos = Math.cos(angle);
+                        const sin = Math.sin(angle);
+
+                        const aabbW = 2 * Math.sqrt((rx * cos) ** 2 + (ry * sin) ** 2);
+                        const aabbH = 2 * Math.sqrt((rx * sin) ** 2 + (ry * cos) ** 2);
+
+                        minX = cx - aabbW / 2;
+                        maxX = cx + aabbW / 2;
+                        minY = cy - aabbH / 2;
+                        maxY = cy + aabbH / 2;
+                    } else {
+                        const corners = [
+                            [-w / 2, -h / 2],
+                            [w / 2, -h / 2],
+                            [w / 2, h / 2],
+                            [-w / 2, h / 2]
+                        ].map(([x, y]) => {
+                            const rx = x * Math.cos(angle) - y * Math.sin(angle);
+                            const ry = x * Math.sin(angle) + y * Math.cos(angle);
+                            return [cx + rx, cy + ry];
+                        });
+
+                        const xs = corners.map(c => c[0]);
+                        const ys = corners.map(c => c[1]);
+
+                        minX = Math.min(...xs);
+                        maxX = Math.max(...xs);
+                        minY = Math.min(...ys);
+                        maxY = Math.max(...ys);
+                    }
 
                     const border = 2;
                     const buffer = 2;
@@ -984,13 +1004,63 @@
                     return;
             }
 
-            // Clamp to room bounds with -4 buffer
-            const buffer = 4;
-            const maxLeft = roomWidthCm - selected.offsetWidth - buffer;
-            const maxTop = roomHeightCm - selected.offsetHeight - buffer;
+            const w = selected.offsetWidth;
+            const h = selected.offsetHeight;
+            const angle = (parseFloat(selected.dataset.rotation) || 0) * Math.PI / 180;
+            const cx = left + w / 2;
+            const cy = top + h / 2;
 
-            left = Math.max(0, Math.min(left, maxLeft));
-            top = Math.max(0, Math.min(top, maxTop));
+            let minX, maxX, minY, maxY;
+
+            const isOval = selected.dataset.type === 'circle' && w !== h && angle !== 0;
+
+            if (isOval) {
+                // Use true rotated ellipse math
+                const rx = w / 2;
+                const ry = h / 2;
+                const cos = Math.cos(angle);
+                const sin = Math.sin(angle);
+
+                const aabbW = 2 * Math.sqrt((rx * cos) ** 2 + (ry * sin) ** 2);
+                const aabbH = 2 * Math.sqrt((rx * sin) ** 2 + (ry * cos) ** 2);
+
+                minX = cx - aabbW / 2;
+                maxX = cx + aabbW / 2;
+                minY = cy - aabbH / 2;
+                maxY = cy + aabbH / 2;
+            } else {
+                // Use rotated rectangle corners
+                const corners = [
+                    [-w / 2, -h / 2],
+                    [w / 2, -h / 2],
+                    [w / 2, h / 2],
+                    [-w / 2, h / 2]
+                ].map(([x, y]) => {
+                    const rx = x * Math.cos(angle) - y * Math.sin(angle);
+                    const ry = x * Math.sin(angle) + y * Math.cos(angle);
+                    return [cx + rx, cy + ry];
+                });
+
+                const xs = corners.map(c => c[0]);
+                const ys = corners.map(c => c[1]);
+
+                minX = Math.min(...xs);
+                maxX = Math.max(...xs);
+                minY = Math.min(...ys);
+                maxY = Math.max(...ys);
+            }
+
+            // Apply same buffer logic as drag
+            const buffer = 4;
+            let dx = 0, dy = 0;
+
+            if (minX < 0) dx = -minX;
+            if (maxX > roomWidthCm - buffer) dx = (roomWidthCm - buffer) - maxX;
+            if (minY < 0) dy = -minY;
+            if (maxY > roomHeightCm - buffer) dy = (roomHeightCm - buffer) - maxY;
+
+            left += dx;
+            top += dy;
 
             selected.style.left = left + 'px';
             selected.style.top = top + 'px';
