@@ -665,11 +665,11 @@
                     const roomRect = room.getBoundingClientRect();
 
                     // Convert mouse to room-space
-                    const mouseX = (e.clientX - roomRect.left) / zoomLevel;
-                    const mouseY = (e.clientY - roomRect.top) / zoomLevel;
+                    const mouseX = (e.clientX - roomRect.left);
+                    const mouseY = (e.clientY - roomRect.top);
 
-                    let newLeft = mouseX - offsetX / zoomLevel;
-                    let newTop = mouseY - offsetY / zoomLevel;
+                    let newLeft = mouseX - offsetX;
+                    let newTop = mouseY - offsetY;
 
                     const angle = (parseFloat(el.dataset.rotation) || 0) * Math.PI / 180;
 
